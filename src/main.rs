@@ -26,7 +26,7 @@ fn gravitational_force(
 ) -> Vector2<f32> {
     let r = position2 - position1;
     let direction = r.norm();
-    let f_mag = 100000000.0 * ((mass1 * mass2) / direction.powi(2));
+    let f_mag = 1000000.0 * ((mass1 * mass2) / direction.powi(2));
     r.normalize() * f_mag
 }
 
@@ -57,6 +57,10 @@ fn setup_physics(mut commands: Commands) {
         .insert(Restitution::coefficient(0.7))
         .insert(GravityScale(0.0))
         .insert(ExternalForce::default())
+        .insert(Velocity {
+            linvel: Vec2::new(0.0, 25.0),
+            ..default()
+        })
         .insert(TransformBundle::from(Transform::from_xyz(500.0, 0.0, 0.0)));
 
     commands
