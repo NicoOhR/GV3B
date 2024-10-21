@@ -26,7 +26,7 @@ fn gravitational_force(
 ) -> Vector2<f32> {
     let r = position2 - position1;
     let direction = r.norm();
-    let f_mag = NEWTONIAN_CONSTANT_OF_GRAVITATION as f32 * ((mass1 * mass2) / direction.powi(2));
+    let f_mag = 100000000.0 * ((mass1 * mass2) / direction.powi(2));
     r.normalize() * f_mag
 }
 
