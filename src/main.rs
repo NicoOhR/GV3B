@@ -31,47 +31,41 @@ fn gravitational_force(
 }
 
 fn apply_gravity(mut bodies: Query<(&Collider, &Transform, &mut ExternalForce)>) {
-    for (i, (body, transform, externalforce)) in bodies.iter_mut().enumerate() {
-        if let Some(ball) = body.as_ball() {
-            let mass1 = ball.radius();
-            let position1 = transform.translation;
-
-            for (body2, transform2, _) in bodies.iter().skip(i + 1) {
-                if let Some(ball2) = body2.as_ball() {
-                    let mass2 = ball2.radius();
-                    let position2 = transform2.translation;
-
-                    let applied_force = gravitational_force(
-                        mass1,
-                        mass2,
-                        position1.truncate().into(),
-                        position2.truncate().into(),
-                    );
-                    externalforce.force = applied_force.into();
-                }
-            }
-        }
+    let mut combinations = bodies.iter_combinations_mut::<2>();
+    while let Some([body1, body2]) = combinations.fetch_next() {
+        let (mass1, translation1, mut ex_force) = body1;
+        let (mass2, translation2, _) = body2;
+        let f_1_2 = gravitational_force(
+            mass1.as_ball().unwrap().radius(),
+            mass2.as_ball().unwrap().radius(),
+            translation1.translation.truncate().into(),
+            translation2.translation.truncate().into(),
+        );
+        ex_force.force = f_1_2.into();
+        println!("{}", f_1_2);
     }
 }
 
 fn setup_physics(mut commands: Commands) {
     /* Create the ground. */
     let mass1 = 40.0;
-    let mass2 = 50.0;
+    let mass2 = 200.0;
 
     commands
         .spawn(RigidBody::Dynamic)
         .insert(Collider::ball(mass1))
         .insert(Restitution::coefficient(0.7))
-        .insert(GravityScale(0.1))
-        .insert(TransformBundle::from(Transform::from_xyz(50.0, 300.0, 0.0)));
+        .insert(GravityScale(0.0))
+        .insert(ExternalForce::default())
+        .insert(TransformBundle::from(Transform::from_xyz(500.0, 0.0, 0.0)));
 
     commands
         .spawn(RigidBody::Dynamic)
         .insert(Collider::ball(mass2))
         .insert(Restitution::coefficient(0.9))
         .insert(GravityScale(0.0))
-        .insert(TransformBundle::from(Transform::from_xyz(0.0, 400.0, 0.0)));
+        .insert(ExternalForce::default())
+        .insert(TransformBundle::from(Transform::from_xyz(-50.0, 0.0, 0.0)));
 }
 
 fn print_ball_altitude(positions: Query<&Transform, With<RigidBody>>) {
