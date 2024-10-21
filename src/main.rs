@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
+use physical_constants::{self, NEWTONIAN_CONSTANT_OF_GRAVITATION};
+use rapier2d::na::Vector2;
 
 fn main() {
     App::new()
@@ -8,26 +10,67 @@ fn main() {
         .add_plugins(RapierDebugRenderPlugin::default())
         .add_systems(Startup, setup_graphics)
         .add_systems(Startup, setup_physics)
-        .add_systems(Update, print_ball_altitude)
+        .add_systems(Update, apply_gravity)
         .run();
 }
 
 fn setup_graphics(mut commands: Commands) {
-    // Add a camera so we can see the debug-render.
     commands.spawn(Camera2dBundle::default());
+}
+
+fn gravitational_force(
+    mass1: f32,
+    mass2: f32,
+    position1: Vector2<f32>,
+    position2: Vector2<f32>,
+) -> Vector2<f32> {
+    let r = position2 - position1;
+    let direction = r.norm();
+    let f_mag = NEWTONIAN_CONSTANT_OF_GRAVITATION as f32 * ((mass1 * mass2) / direction.powi(2));
+    r.normalize() * f_mag
+}
+
+fn apply_gravity(mut bodies: Query<(&Collider, &Transform, &mut ExternalForce)>) {
+    for (i, (body, transform, externalforce)) in bodies.iter_mut().enumerate() {
+        if let Some(ball) = body.as_ball() {
+            let mass1 = ball.radius();
+            let position1 = transform.translation;
+
+            for (body2, transform2, _) in bodies.iter().skip(i + 1) {
+                if let Some(ball2) = body2.as_ball() {
+                    let mass2 = ball2.radius();
+                    let position2 = transform2.translation;
+
+                    let applied_force = gravitational_force(
+                        mass1,
+                        mass2,
+                        position1.truncate().into(),
+                        position2.truncate().into(),
+                    );
+                    externalforce.force = applied_force.into();
+                }
+            }
+        }
+    }
 }
 
 fn setup_physics(mut commands: Commands) {
     /* Create the ground. */
-    commands
-        .spawn(Collider::cuboid(500.0, 50.0))
-        .insert(TransformBundle::from(Transform::from_xyz(0.0, -100.0, 0.0)));
+    let mass1 = 40.0;
+    let mass2 = 50.0;
 
-    /* Create the bouncing ball. */
     commands
         .spawn(RigidBody::Dynamic)
-        .insert(Collider::ball(50.0))
+        .insert(Collider::ball(mass1))
         .insert(Restitution::coefficient(0.7))
+        .insert(GravityScale(0.1))
+        .insert(TransformBundle::from(Transform::from_xyz(50.0, 300.0, 0.0)));
+
+    commands
+        .spawn(RigidBody::Dynamic)
+        .insert(Collider::ball(mass2))
+        .insert(Restitution::coefficient(0.9))
+        .insert(GravityScale(0.0))
         .insert(TransformBundle::from(Transform::from_xyz(0.0, 400.0, 0.0)));
 }
 
