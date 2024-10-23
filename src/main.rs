@@ -4,6 +4,9 @@ use bevy_rapier2d::prelude::*;
 use physical_constants::{self, NEWTONIAN_CONSTANT_OF_GRAVITATION};
 use rapier2d::na::Vector2;
 
+#[derive(Component)]
+struct CenterOfMassLine;
+
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
@@ -33,19 +36,17 @@ fn gravitational_force(
     r.normalize() * f_mag
 }
 
-fn debug_vel_vector(mut commands: Commands, bodies: Query<(&Collider, &Transform, &Velocity)>) {
-    let bodies_iter = bodies.iter();
-    for (collider, transform, velocity) in bodies_iter {
-        let center_of_mass = transform.translation.truncate();
-        let vel = velocity.linvel.normalize();
-        let line = shapes::Line(center_of_mass, vel);
-        commands.spawn((
-            ShapeBundle {
-                path: GeometryBuilder::build_as(&line),
-                ..Default::default()
-            },
-            Stroke::new(Color::WHITE, 2.0), // White line with 2.0 thickness
-        ));
+fn debug_vel_vector(
+    mut query_line: Query<&mut Path, With<CenterOfMassLine>>,
+    query_body: Query<(&Transform, &Velocity)>,
+) {
+    for mut path in query_line.iter_mut() {
+        for (transform, velocity) in query_body.iter() {
+            let center_of_mass = transform.translation.truncate();
+            let vel = velocity.linvel.normalize();
+            let new_line = shapes::Line(center_of_mass, vel);
+            *path = ShapePath::build_as(&new_line);
+        }
     }
 }
 
@@ -68,6 +69,16 @@ fn setup_physics(mut commands: Commands) {
     /* Create the ground. */
     let mass1 = 40.0;
     let mass2 = 200.0;
+
+    let line = shapes::Line(Vec2::ZERO, Vec2::new(100.0, 0.0));
+    commands.spawn((
+        ShapeBundle {
+            path: GeometryBuilder::build_as(&line),
+            ..default()
+        },
+        Stroke::new(Color::WHITE, 2.0), // White line with 2.0 thickness
+        CenterOfMassLine,               // Mark this entity with a tag component
+    ));
 
     commands
         .spawn(RigidBody::Dynamic)
