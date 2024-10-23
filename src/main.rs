@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
 use physical_constants::{self, NEWTONIAN_CONSTANT_OF_GRAVITATION};
 use rapier2d::na::Vector2;
@@ -6,11 +7,13 @@ use rapier2d::na::Vector2;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
+        .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(10.0))
         .add_plugins(RapierDebugRenderPlugin::default())
+        .add_plugins(ShapePlugin)
         .add_systems(Startup, setup_graphics)
         .add_systems(Startup, setup_physics)
         .add_systems(Update, apply_gravity)
+        .add_systems(Update, debug_vel_vector)
         .run();
 }
 
@@ -30,6 +33,22 @@ fn gravitational_force(
     r.normalize() * f_mag
 }
 
+fn debug_vel_vector(mut commands: Commands, bodies: Query<(&Collider, &Transform, &Velocity)>) {
+    let bodies_iter = bodies.iter();
+    for (collider, transform, velocity) in bodies_iter {
+        let center_of_mass = transform.translation.truncate();
+        let vel = velocity.linvel.normalize();
+        let line = shapes::Line(center_of_mass, vel);
+        commands.spawn((
+            ShapeBundle {
+                path: GeometryBuilder::build_as(&line),
+                ..Default::default()
+            },
+            Stroke::new(Color::WHITE, 2.0), // White line with 2.0 thickness
+        ));
+    }
+}
+
 fn apply_gravity(mut bodies: Query<(&Collider, &Transform, &mut ExternalForce)>) {
     let mut combinations = bodies.iter_combinations_mut::<2>();
     while let Some([body1, body2]) = combinations.fetch_next() {
@@ -42,7 +61,6 @@ fn apply_gravity(mut bodies: Query<(&Collider, &Transform, &mut ExternalForce)>)
             translation2.translation.truncate().into(),
         );
         ex_force.force = f_1_2.into();
-        println!("{}", f_1_2);
     }
 }
 
