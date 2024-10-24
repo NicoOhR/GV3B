@@ -43,8 +43,8 @@ fn debug_vel_vector(
     for mut path in query_line.iter_mut() {
         for (transform, velocity) in query_body.iter() {
             let center_of_mass = transform.translation.truncate();
-            let vel = velocity.linvel.normalize();
-            let new_line = shapes::Line(center_of_mass, vel);
+            let vel = velocity.linvel;
+            let new_line = shapes::Line(center_of_mass, center_of_mass + vel);
             *path = ShapePath::build_as(&new_line);
         }
     }
