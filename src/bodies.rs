@@ -22,8 +22,10 @@ pub fn gravitational_force(
 pub fn apply_gravity(mut bodies: Query<(&ColliderMassProperties, &Transform, &mut ExternalForce)>) {
     let mut combinations = bodies.iter_combinations_mut::<2>();
     while let Some([body1, body2]) = combinations.fetch_next() {
-        let (mass_properties_1, translation1, mut ex_force) = body1;
-        let (mass_properties_2, translation2, _) = body2;
+        let (mass_properties_1, translation1, mut ex_force_1) = body1;
+        let (mass_properties_2, translation2, mut ex_force_2) = body2;
+
+        //now this is just awful
         let mass1 = match mass_properties_1 {
             ColliderMassProperties::Mass(mass) => Some(*mass),
             _ => Some(0.0),
@@ -38,7 +40,9 @@ pub fn apply_gravity(mut bodies: Query<(&ColliderMassProperties, &Transform, &mu
             translation1.translation.truncate().into(),
             translation2.translation.truncate().into(),
         );
-        ex_force.force = f_1_2.into();
+        let f_2_1 = -f_1_2;
+        ex_force_1.force = f_1_2.into();
+        ex_force_2.force = f_2_1.into();
     }
 }
 
