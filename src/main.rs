@@ -11,15 +11,31 @@ fn main() {
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(20.0))
         .add_plugins(RapierDebugRenderPlugin::default())
         .add_plugins(ShapePlugin)
+        .insert_resource(RapierConfiguration {
+            timestep_mode: TimestepMode::Fixed {
+                dt: 1.0 / 10.0, // Set timestep for 30 FPS
+                substeps: 1,
+            },
+            gravity: Vec2::new(0.0, 0.0), // Gravity if needed
+            physics_pipeline_active: true,
+            query_pipeline_active: true,
+            scaled_shape_subdivision: 10, // Set subdivision level for scaled shapes
+            force_update_from_transform_changes: true, // Force updates based on transform changes
+        })
         .add_systems(Startup, setup_graphics)
         .add_systems(Startup, setup_physics)
         .add_systems(Update, bodies::apply_gravity)
         .add_systems(Update, bodies::debug_vel_vector)
         .run();
 }
-
 fn setup_graphics(mut commands: Commands) {
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera2dBundle {
+        projection: OrthographicProjection {
+            scale: 1.5,
+            ..default()
+        },
+        ..default()
+    });
 }
 
 fn setup_physics(mut commands: Commands) {
@@ -33,7 +49,7 @@ fn setup_physics(mut commands: Commands) {
             path: GeometryBuilder::build_as(&line),
             ..default()
         },
-        Stroke::new(Color::WHITE, 2.0), // White line with 2.0 thickness
+        Stroke::new(Color::WHITE, 5.0), // White line with 2.0 thickness
         bodies::CenterOfMassLine,       // Mark this entity with a tag component
     ));
 
