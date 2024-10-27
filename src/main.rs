@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{math::VectorSpace, prelude::*};
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
 
@@ -26,6 +26,7 @@ fn main() {
         .add_systems(Startup, bodies::setup_vectors.after(setup_physics))
         .add_systems(Update, bodies::apply_gravity)
         .add_systems(Update, bodies::debug_vel_vector)
+        .add_systems(Update, camera_update)
         .run();
 }
 fn setup_graphics(mut commands: Commands) {
@@ -38,7 +39,19 @@ fn setup_graphics(mut commands: Commands) {
     });
 }
 
-fn camera_update(mut commands: Commands) {}
+fn camera_update(
+    q_bodies: Query<(&Transform, &Velocity)>,
+    mut camera: Query<&mut Transform, (With<Camera>, Without<Velocity>)>,
+) {
+    let mut average: Vec3 = Vec3::ZERO;
+    for (transform, _) in q_bodies.iter() {
+        average = average + transform.translation;
+    }
+    average = average * (1 / 3) as f32;
+    for mut transform in camera.iter_mut() {
+        transform.translation = average;
+    }
+}
 
 fn setup_physics(mut commands: Commands) {
     /* Create the ground. */
