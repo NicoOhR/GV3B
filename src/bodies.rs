@@ -46,7 +46,7 @@ pub fn apply_gravity(mut bodies: Query<(&ColliderMassProperties, &Transform, &mu
 pub fn vector_setup(mut commands: Commands, query_bodies: Query<&Transform>) {
     for _ in query_bodies.iter() {
         println!("making vector");
-        let line = shapes::Line(Vec2::ZERO, Vec2::new(100.0, 0.0));
+        let line = shapes::Line(Vec2::ZERO, Vec2::new(0.0, 0.0));
         commands.spawn((
             ShapeBundle {
                 path: GeometryBuilder::build_as(&line),
@@ -62,7 +62,6 @@ pub fn debug_vel_vector(
     mut query_path: Query<&mut Path>,
 ) {
     for ((transform, velocity), mut path) in query_body.iter().zip(query_path.iter_mut()) {
-        println!("updating vector");
         let center_of_mass = transform.translation.truncate();
         let vel = velocity.linvel * 10.0;
         let new_line = shapes::Line(center_of_mass, center_of_mass + vel);

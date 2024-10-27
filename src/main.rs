@@ -47,16 +47,6 @@ fn setup_physics(mut commands: Commands) {
     let mass2 = 600.0;
     let mass3 = 300.0;
 
-    let line = shapes::Line(Vec2::ZERO, Vec2::new(500.0, 0.0));
-    /*
-        commands.spawn((
-            ShapeBundle {
-                path: GeometryBuilder::build_as(&line),
-                ..default()
-            },
-            Stroke::new(Color::WHITE, 5.0), // White line with 2.0 thickness
-        ));
-    */
     commands
         .spawn(RigidBody::Dynamic)
         .insert(Collider::ball(40.0))
@@ -90,5 +80,9 @@ fn setup_physics(mut commands: Commands) {
         .insert(ColliderMassProperties::Mass(mass2))
         .insert(GravityScale(0.0))
         .insert(ExternalForce::default())
+        .insert(Velocity {
+            linvel: Vec2::new(0.0, 0.0),
+            ..default()
+        })
         .insert(TransformBundle::from(Transform::from_xyz(-50.0, 0.0, 0.0)));
 }
