@@ -42,7 +42,7 @@ pub fn apply_gravity(mut bodies: Query<(&ColliderMassProperties, &Transform, &mu
     }
 }
 
-pub fn vector_setup(mut commands: Commands, query_bodies: Query<&Transform>) {
+pub fn setup_vectors(mut commands: Commands, query_bodies: Query<&Transform>) {
     for _ in query_bodies.iter() {
         println!("making vector");
         let line = shapes::Line(Vec2::ZERO, Vec2::new(0.0, 0.0));

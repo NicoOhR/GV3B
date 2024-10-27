@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
-use bodies::vector_setup;
 
 mod bodies;
 
@@ -13,10 +12,10 @@ fn main() {
         .add_plugins(ShapePlugin)
         .insert_resource(RapierConfiguration {
             timestep_mode: TimestepMode::Fixed {
-                dt: 1.0 / 10.0, // Set timestep for 30 FPS
+                dt: 1.0 / 10.0,
                 substeps: 1,
             },
-            gravity: Vec2::new(0.0, 0.0), // Gravity if needed
+            gravity: Vec2::new(0.0, 0.0),
             physics_pipeline_active: true,
             query_pipeline_active: true,
             scaled_shape_subdivision: 10, // Set subdivision level for scaled shapes
@@ -24,7 +23,7 @@ fn main() {
         })
         .add_systems(Startup, setup_graphics)
         .add_systems(Startup, setup_physics)
-        .add_systems(Startup, vector_setup.after(setup_physics))
+        .add_systems(Startup, bodies::setup_vectors.after(setup_physics))
         .add_systems(Update, bodies::apply_gravity)
         .add_systems(Update, bodies::debug_vel_vector)
         .run();
@@ -39,6 +38,8 @@ fn setup_graphics(mut commands: Commands) {
     });
 }
 
+fn camera_update(mut commands: Commands) {}
+
 fn setup_physics(mut commands: Commands) {
     /* Create the ground. */
     let mass1 = 60.0;
@@ -49,7 +50,6 @@ fn setup_physics(mut commands: Commands) {
         .spawn(RigidBody::Dynamic)
         .insert(Collider::ball(40.0))
         .insert(Restitution::coefficient(1.0))
-        .insert(GravityScale(0.0))
         .insert(ColliderMassProperties::Mass(mass1))
         .insert(ExternalForce::default())
         .insert(Velocity {
@@ -62,7 +62,6 @@ fn setup_physics(mut commands: Commands) {
         .spawn(RigidBody::Dynamic)
         .insert(Collider::ball(40.0))
         .insert(Restitution::coefficient(1.0))
-        .insert(GravityScale(0.0))
         .insert(ColliderMassProperties::Mass(mass3))
         .insert(ExternalForce::default())
         .insert(Velocity {
@@ -76,7 +75,6 @@ fn setup_physics(mut commands: Commands) {
         .insert(Collider::ball(40.0))
         .insert(Restitution::coefficient(1.0))
         .insert(ColliderMassProperties::Mass(mass2))
-        .insert(GravityScale(0.0))
         .insert(ExternalForce::default())
         .insert(Velocity {
             linvel: Vec2::new(0.0, 0.0),
