@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
-use physical_constants::{self, NEWTONIAN_CONSTANT_OF_GRAVITATION};
 use rapier2d::na::Vector2;
 
 pub fn gravitational_force(

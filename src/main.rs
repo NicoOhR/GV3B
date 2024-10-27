@@ -1,9 +1,7 @@
-use bevy::render::camera::ScalingMode;
-use bevy::{math::VectorSpace, prelude::*};
+use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::*;
-use bevy_rapier2d::{prelude::*, rapier::prelude::MassProperties};
+use bevy_rapier2d::prelude::*;
 use bodies::vector_setup;
-use rapier2d::na::Vector2;
 
 mod bodies;
 
