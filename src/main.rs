@@ -1,6 +1,7 @@
 use bevy::{math::VectorSpace, prelude::*};
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
+use bodies::apply_gravity;
 mod bodies;
 
 fn main() {
@@ -24,8 +25,8 @@ fn main() {
         .add_systems(Startup, setup_physics)
         .add_systems(Startup, bodies::setup_vectors.after(setup_physics))
         .add_systems(Update, bodies::apply_gravity)
-        .add_systems(Update, bodies::debug_vel_vector)
         .add_systems(Update, camera_update)
+        .add_systems(Update, bodies::debug_vel_vector.after(apply_gravity))
         .run();
 }
 fn setup_graphics(mut commands: Commands) {
@@ -56,8 +57,8 @@ fn camera_update(
 fn setup_physics(mut commands: Commands) {
     /* Create the ground. */
     let mass1 = 60.0;
-    let mass2 = 600.0;
-    let mass3 = 300.0;
+    let mass2 = 60.0;
+    let mass3 = 60.0;
 
     commands
         .spawn(RigidBody::Dynamic)
@@ -77,7 +78,7 @@ fn setup_physics(mut commands: Commands) {
         .insert(ColliderMassProperties::Mass(mass3))
         .insert(ExternalForce::default())
         .insert(Velocity {
-            linvel: Vec2::new(0.0, 0.0),
+            linvel: Vec2::new(0.0, 25.0),
             ..default()
         })
         .insert(TransformBundle::from(Transform::from_xyz(-600.0, 0.0, 0.0)));
@@ -88,7 +89,7 @@ fn setup_physics(mut commands: Commands) {
         .insert(ColliderMassProperties::Mass(mass2))
         .insert(ExternalForce::default())
         .insert(Velocity {
-            linvel: Vec2::new(0.0, 0.0),
+            linvel: Vec2::new(0.0, -25.0),
             ..default()
         })
         .insert(TransformBundle::from(Transform::from_xyz(-50.0, 0.0, 0.0)));

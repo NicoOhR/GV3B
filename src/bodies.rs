@@ -62,8 +62,9 @@ pub fn debug_vel_vector(
 ) {
     for ((transform, velocity), mut path) in query_body.iter().zip(query_path.iter_mut()) {
         let center_of_mass = transform.translation.truncate();
-        let vel = velocity.linvel * 10.0;
+        let vel = velocity.linvel;
         let new_line = shapes::Line(center_of_mass, center_of_mass + vel);
+        println!("Making Vector {:?}", vel);
         *path = ShapePath::build_as(&new_line);
     }
 }
