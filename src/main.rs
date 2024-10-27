@@ -1,7 +1,6 @@
 use bevy::{math::VectorSpace, prelude::*};
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
-
 mod bodies;
 
 fn main() {
@@ -40,15 +39,16 @@ fn setup_graphics(mut commands: Commands) {
 }
 
 fn camera_update(
-    q_bodies: Query<(&Transform, &Velocity)>,
-    mut camera: Query<&mut Transform, (With<Camera>, Without<Velocity>)>,
+    q_bodies: Query<&Transform, With<Velocity>>,
+    mut camera: Query<&mut Transform, (With<Camera2d>, Without<Velocity>)>,
 ) {
     let mut average: Vec3 = Vec3::ZERO;
-    for (transform, _) in q_bodies.iter() {
+    for transform in q_bodies.iter() {
         average = average + transform.translation;
     }
-    average = average * (1 / 3) as f32;
+    average /= 3.0;
     for mut transform in camera.iter_mut() {
+        average.z = transform.translation.z;
         transform.translation = average;
     }
 }
@@ -70,7 +70,6 @@ fn setup_physics(mut commands: Commands) {
             ..default()
         })
         .insert(TransformBundle::from(Transform::from_xyz(500.0, 0.0, 0.0)));
-
     commands
         .spawn(RigidBody::Dynamic)
         .insert(Collider::ball(40.0))
@@ -82,7 +81,6 @@ fn setup_physics(mut commands: Commands) {
             ..default()
         })
         .insert(TransformBundle::from(Transform::from_xyz(-600.0, 0.0, 0.0)));
-
     commands
         .spawn(RigidBody::Dynamic)
         .insert(Collider::ball(40.0))
