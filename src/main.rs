@@ -1,8 +1,10 @@
-use bevy::prelude::*;
 use bevy::render::camera::ScalingMode;
+use bevy::{math::VectorSpace, prelude::*};
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::{prelude::*, rapier::prelude::MassProperties};
+use bodies::vector_setup;
 use rapier2d::na::Vector2;
+
 mod bodies;
 
 fn main() {
@@ -24,6 +26,7 @@ fn main() {
         })
         .add_systems(Startup, setup_graphics)
         .add_systems(Startup, setup_physics)
+        .add_systems(Startup, vector_setup.after(setup_physics))
         .add_systems(Update, bodies::apply_gravity)
         .add_systems(Update, bodies::debug_vel_vector)
         .run();
@@ -44,16 +47,16 @@ fn setup_physics(mut commands: Commands) {
     let mass2 = 600.0;
     let mass3 = 300.0;
 
-    let line = shapes::Line(Vec2::ZERO, Vec2::new(100.0, 0.0));
-    commands.spawn((
-        ShapeBundle {
-            path: GeometryBuilder::build_as(&line),
-            ..default()
-        },
-        Stroke::new(Color::WHITE, 5.0), // White line with 2.0 thickness
-        bodies::CenterOfMassLine,       // Mark this entity with a tag component
-    ));
-
+    let line = shapes::Line(Vec2::ZERO, Vec2::new(500.0, 0.0));
+    /*
+        commands.spawn((
+            ShapeBundle {
+                path: GeometryBuilder::build_as(&line),
+                ..default()
+            },
+            Stroke::new(Color::WHITE, 5.0), // White line with 2.0 thickness
+        ));
+    */
     commands
         .spawn(RigidBody::Dynamic)
         .insert(Collider::ball(40.0))
@@ -88,10 +91,4 @@ fn setup_physics(mut commands: Commands) {
         .insert(GravityScale(0.0))
         .insert(ExternalForce::default())
         .insert(TransformBundle::from(Transform::from_xyz(-50.0, 0.0, 0.0)));
-}
-
-fn print_ball_altitude(positions: Query<&Transform, With<RigidBody>>) {
-    for transform in positions.iter() {
-        println!("Ball altitude: {}", transform.translation.y);
-    }
 }

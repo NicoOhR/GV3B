@@ -4,9 +4,6 @@ use bevy_rapier2d::prelude::*;
 use physical_constants::{self, NEWTONIAN_CONSTANT_OF_GRAVITATION};
 use rapier2d::na::Vector2;
 
-#[derive(Component)]
-pub struct CenterOfMassLine;
-
 pub fn gravitational_force(
     mass1: f32,
     mass2: f32,
@@ -46,16 +43,29 @@ pub fn apply_gravity(mut bodies: Query<(&ColliderMassProperties, &Transform, &mu
     }
 }
 
+pub fn vector_setup(mut commands: Commands, query_bodies: Query<&Transform>) {
+    for _ in query_bodies.iter() {
+        println!("making vector");
+        let line = shapes::Line(Vec2::ZERO, Vec2::new(100.0, 0.0));
+        commands.spawn((
+            ShapeBundle {
+                path: GeometryBuilder::build_as(&line),
+                ..default()
+            },
+            Stroke::new(Color::WHITE, 5.0), // Spawn in lines
+        ));
+    }
+}
+
 pub fn debug_vel_vector(
-    mut query_line: Query<&mut Path, With<CenterOfMassLine>>,
     query_body: Query<(&Transform, &Velocity)>,
+    mut query_path: Query<&mut Path>,
 ) {
-    for mut path in query_line.iter_mut() {
-        for (transform, velocity) in query_body.iter() {
-            let center_of_mass = transform.translation.truncate();
-            let vel = velocity.linvel * 3.0;
-            let new_line = shapes::Line(center_of_mass, center_of_mass + vel);
-            *path = ShapePath::build_as(&new_line);
-        }
+    for ((transform, velocity), mut path) in query_body.iter().zip(query_path.iter_mut()) {
+        println!("updating vector");
+        let center_of_mass = transform.translation.truncate();
+        let vel = velocity.linvel * 10.0;
+        let new_line = shapes::Line(center_of_mass, center_of_mass + vel);
+        *path = ShapePath::build_as(&new_line);
     }
 }
