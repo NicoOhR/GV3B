@@ -1,7 +1,7 @@
 use bevy::{math::VectorSpace, prelude::*};
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
-use bodies::apply_gravity;
+use bodies::gravity_update;
 mod bodies;
 
 fn main() {
@@ -24,9 +24,9 @@ fn main() {
         .add_systems(Startup, setup_graphics)
         .add_systems(Startup, setup_physics)
         .add_systems(Startup, bodies::setup_vectors.after(setup_physics))
-        .add_systems(Update, bodies::apply_gravity)
+        .add_systems(Update, bodies::gravity_update)
         .add_systems(Update, camera_update)
-        .add_systems(Update, bodies::debug_vel_vector.after(apply_gravity))
+        .add_systems(Update, bodies::vector_update.after(gravity_update))
         .run();
 }
 fn setup_graphics(mut commands: Commands) {

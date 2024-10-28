@@ -15,7 +15,9 @@ pub fn gravitational_force(
     r.normalize() * f_mag
 }
 
-pub fn apply_gravity(mut bodies: Query<(&ColliderMassProperties, &Transform, &mut ExternalForce)>) {
+pub fn gravity_update(
+    mut bodies: Query<(&ColliderMassProperties, &Transform, &mut ExternalForce)>,
+) {
     let mut combinations = bodies.iter_combinations_mut::<2>();
     while let Some([body1, body2]) = combinations.fetch_next() {
         let (mass_properties_1, translation1, mut ex_force_1) = body1;
@@ -56,10 +58,7 @@ pub fn setup_vectors(mut commands: Commands, query_bodies: Query<&Transform>) {
     }
 }
 
-pub fn debug_vel_vector(
-    query_body: Query<(&Transform, &Velocity)>,
-    mut query_path: Query<&mut Path>,
-) {
+pub fn vector_update(query_body: Query<(&Transform, &Velocity)>, mut query_path: Query<&mut Path>) {
     for ((transform, velocity), mut path) in query_body.iter().zip(query_path.iter_mut()) {
         let center_of_mass = transform.translation.truncate();
         let vel = velocity.linvel;
