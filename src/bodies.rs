@@ -3,6 +3,39 @@ use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rapier2d::na::Vector2;
 
+pub struct BodyAttributes {
+    pub radius: f32,
+    pub restitution: f32,
+    pub mass: f32,
+    pub velocity: Vec2,
+    pub position: Vec2,
+}
+
+#[derive(Default, Resource)]
+pub struct BodiesResource {
+    pub bodies: Vec<BodyAttributes>,
+}
+
+pub fn spawn_bodies(mut commands: Commands, bodies: Res<BodiesResource>) {
+    let bodies_iter = &bodies.bodies;
+    for body in bodies_iter {
+        commands
+            .spawn(RigidBody::Dynamic)
+            .insert(Collider::ball(body.radius))
+            .insert(Restitution::coefficient(body.restitution))
+            .insert(ColliderMassProperties::Mass(body.mass))
+            .insert(ExternalForce::default())
+            .insert(Velocity {
+                linvel: body.velocity,
+                ..default()
+            })
+            .insert(TransformBundle::from(Transform::from_xyz(
+                body.position.x,
+                body.position.y,
+                0.0,
+            )));
+    }
+}
 pub fn gravitational_force(
     mass1: f32,
     mass2: f32,

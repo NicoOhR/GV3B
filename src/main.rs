@@ -1,10 +1,17 @@
 use bevy::{math::VectorSpace, prelude::*};
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
-use bodies::gravity_update;
+use bodies::{gravity_update, spawn_bodies, BodyAttributes};
 mod bodies;
 
 fn main() {
+    let bodies = vec![BodyAttributes {
+        radius: 40.0,
+        restitution: 1.0,
+        mass: 300.0,
+        velocity: Vec2::new(0.0, 25.0),
+        position: Vec2::new(500.0, 0.0),
+    }];
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(20.0))
@@ -21,7 +28,9 @@ fn main() {
             scaled_shape_subdivision: 10, // Set subdivision level for scaled shapes
             force_update_from_transform_changes: true, // Force updates based on transform changes
         })
+        .insert_resource(bodies::BodiesResource { bodies })
         .add_systems(Startup, setup_graphics)
+        .add_systems(Startup, spawn_bodies)
         .add_systems(Startup, setup_physics)
         .add_systems(Startup, bodies::setup_vectors.after(setup_physics))
         .add_systems(Update, bodies::gravity_update)
@@ -69,17 +78,19 @@ fn setup_physics(mut commands: Commands) {
     let mass2 = 600.0;
     let mass3 = 300.0;
 
-    commands
-        .spawn(RigidBody::Dynamic)
-        .insert(Collider::ball(40.0))
-        .insert(Restitution::coefficient(1.0))
-        .insert(ColliderMassProperties::Mass(mass1))
-        .insert(ExternalForce::default())
-        .insert(Velocity {
-            linvel: Vec2::new(0.0, 25.0),
-            ..default()
-        })
-        .insert(TransformBundle::from(Transform::from_xyz(500.0, 0.0, 0.0)));
+    /*
+        commands
+            .spawn(RigidBody::Dynamic)
+            .insert(Collider::ball(40.0))
+            .insert(Restitution::coefficient(1.0))
+            .insert(ColliderMassProperties::Mass(mass1))
+            .insert(ExternalForce::default())
+            .insert(Velocity {
+                linvel: Vec2::new(0.0, 25.0),
+                ..default()
+            })
+            .insert(TransformBundle::from(Transform::from_xyz(500.0, 0.0, 0.0)));
+    */
     commands
         .spawn(RigidBody::Dynamic)
         .insert(Collider::ball(40.0))
