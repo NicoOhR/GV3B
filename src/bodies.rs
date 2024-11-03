@@ -5,42 +5,35 @@ use rapier2d::na::Vector2;
 use serde::Deserialize;
 use std::{fs::File, io::Read};
 
-#[derive(Debug, Deserialize)]
-pub struct Config {
-    pub BodyAttributes: Vec<BodyAttributes>,
-}
+#[derive(Debug, Deserialize, Resource)]
+pub struct InitialCondition(pub Vec<BodyAttributes>);
 
 #[derive(Debug, Deserialize)]
 pub struct BodyAttributes {
     pub radius: f32,
     pub restitution: f32,
     pub mass: f32,
-    pub velocity: TomlVector,
-    pub position: TomlVector,
+    pub velocity: VectorStruct,
+    pub position: VectorStruct,
 }
 #[derive(Debug, Deserialize)]
-pub struct TomlVector {
+pub struct VectorStruct {
     x: f32,
     y: f32,
 }
 
-#[derive(Default, Resource)]
-pub struct BodiesResource {
-    pub bodies: Vec<BodyAttributes>,
-}
-
-pub fn parse_config() -> Config {
+pub fn parse_config() -> InitialCondition {
     let mut file = File::open("config.toml").unwrap();
     let mut configuration = String::new();
     file.read_to_string(&mut configuration).unwrap();
 
-    let attributes: Config = toml::from_str(&configuration).unwrap();
+    let attributes: InitialCondition = toml::from_str(&configuration).unwrap();
 
     attributes
 }
 
-pub fn spawn_bodies(mut commands: Commands, bodies: Res<BodiesResource>) {
-    let bodies_iter = &bodies.bodies;
+pub fn spawn_bodies(mut commands: Commands, bodies: Res<InitialCondition>) {
+    let bodies_iter = &bodies.0;
     for body in bodies_iter {
         commands
             .spawn(RigidBody::Dynamic)
@@ -59,6 +52,7 @@ pub fn spawn_bodies(mut commands: Commands, bodies: Res<BodiesResource>) {
             )));
     }
 }
+
 pub fn gravitational_force(
     mass1: f32,
     mass2: f32,

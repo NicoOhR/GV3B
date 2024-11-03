@@ -1,11 +1,10 @@
-use bevy::{math::VectorSpace, prelude::*};
+use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
-use bodies::{gravity_update, parse_config, spawn_bodies, BodyAttributes};
 mod bodies;
 
 fn main() {
-    let bodies = bodies::parse_config().BodyAttributes;
+    let bodies = bodies::parse_config().0;
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(20.0))
@@ -22,13 +21,13 @@ fn main() {
             scaled_shape_subdivision: 10, // Set subdivision level for scaled shapes
             force_update_from_transform_changes: true, // Force updates based on transform changes
         })
-        .insert_resource(bodies::BodiesResource { bodies })
+        .insert_resource(bodies::InitialCondition(bodies))
         .add_systems(Startup, setup_graphics)
-        .add_systems(Startup, spawn_bodies)
-        .add_systems(Startup, bodies::setup_vectors.after(spawn_bodies))
+        .add_systems(Startup, bodies::spawn_bodies)
+        .add_systems(Startup, bodies::setup_vectors.after(bodies::spawn_bodies))
         .add_systems(Update, bodies::gravity_update)
         .add_systems(Update, camera_update)
-        .add_systems(Update, bodies::vector_update.after(gravity_update))
+        .add_systems(Update, bodies::vector_update.after(bodies::gravity_update))
         .run();
 }
 fn setup_graphics(mut commands: Commands) {
