@@ -4,14 +4,24 @@ use bevy_rapier2d::prelude::*;
 use rapier2d::na::Vector2;
 use serde::Deserialize;
 use std::{fs::File, io::Read};
-use toml::*;
+
+#[derive(Debug, Deserialize)]
+pub struct Config {
+    pub BodyAttributes: Vec<BodyAttributes>,
+}
+
 #[derive(Debug, Deserialize)]
 pub struct BodyAttributes {
     pub radius: f32,
     pub restitution: f32,
     pub mass: f32,
-    pub velocity: Vec2,
-    pub position: Vec2,
+    pub velocity: TomlVector,
+    pub position: TomlVector,
+}
+#[derive(Debug, Deserialize)]
+pub struct TomlVector {
+    x: f32,
+    y: f32,
 }
 
 #[derive(Default, Resource)]
@@ -19,22 +29,14 @@ pub struct BodiesResource {
     pub bodies: Vec<BodyAttributes>,
 }
 
-pub fn parse_config() -> Vec<BodyAttributes> {
+pub fn parse_config() -> Config {
     let mut file = File::open("config.toml").unwrap();
     let mut configuration = String::new();
-    let mut configuration_list: Vec<BodyAttributes> = Vec::new();
     file.read_to_string(&mut configuration).unwrap();
-    let body_atters: Vec<&str> = configuration.split("[[BodyAttributes]]").collect();
 
-    for string in body_atters.clone() {
-        println!("{string}");
-    }
-    for body in body_atters {
-        let attributes: BodyAttributes = toml::from_str(body).unwrap();
-        configuration_list.push(attributes);
-    }
+    let attributes: Config = toml::from_str(&configuration).unwrap();
 
-    configuration_list
+    attributes
 }
 
 pub fn spawn_bodies(mut commands: Commands, bodies: Res<BodiesResource>) {
@@ -47,7 +49,7 @@ pub fn spawn_bodies(mut commands: Commands, bodies: Res<BodiesResource>) {
             .insert(ColliderMassProperties::Mass(body.mass))
             .insert(ExternalForce::default())
             .insert(Velocity {
-                linvel: body.velocity,
+                linvel: Vec2::new(body.velocity.x, body.velocity.y),
                 ..default()
             })
             .insert(TransformBundle::from(Transform::from_xyz(
