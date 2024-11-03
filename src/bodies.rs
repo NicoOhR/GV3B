@@ -2,7 +2,10 @@ use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rapier2d::na::Vector2;
-
+use serde::Deserialize;
+use std::{fs::File, io::Read};
+use toml::*;
+#[derive(Debug, Deserialize)]
 pub struct BodyAttributes {
     pub radius: f32,
     pub restitution: f32,
@@ -14,6 +17,24 @@ pub struct BodyAttributes {
 #[derive(Default, Resource)]
 pub struct BodiesResource {
     pub bodies: Vec<BodyAttributes>,
+}
+
+pub fn parse_config() -> Vec<BodyAttributes> {
+    let mut file = File::open("config.toml").unwrap();
+    let mut configuration = String::new();
+    let mut configuration_list: Vec<BodyAttributes> = Vec::new();
+    file.read_to_string(&mut configuration).unwrap();
+    let body_atters: Vec<&str> = configuration.split("[[BodyAttributes]]").collect();
+
+    for string in body_atters.clone() {
+        println!("{string}");
+    }
+    for body in body_atters {
+        let attributes: BodyAttributes = toml::from_str(body).unwrap();
+        configuration_list.push(attributes);
+    }
+
+    configuration_list
 }
 
 pub fn spawn_bodies(mut commands: Commands, bodies: Res<BodiesResource>) {
@@ -79,7 +100,7 @@ pub fn gravity_update(
 
 pub fn setup_vectors(mut commands: Commands, query_bodies: Query<&Transform>) {
     for _ in query_bodies.iter() {
-        println!("making vector");
+        //println!("making vector");
         let line = shapes::Line(Vec2::ZERO, Vec2::new(0.0, 0.0));
         commands.spawn((
             ShapeBundle {
@@ -96,7 +117,7 @@ pub fn vector_update(query_body: Query<(&Transform, &Velocity)>, mut query_path:
         let center_of_mass = transform.translation.truncate();
         let vel = velocity.linvel;
         let new_line = shapes::Line(center_of_mass, center_of_mass + vel);
-        println!("Making Vector {:?}", vel);
+        //println!("Making Vector {:?}", vel);
         *path = ShapePath::build_as(&new_line);
     }
 }

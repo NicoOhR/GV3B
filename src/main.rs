@@ -1,42 +1,39 @@
 use bevy::{math::VectorSpace, prelude::*};
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
-use bodies::{gravity_update, spawn_bodies, BodyAttributes};
+use bodies::{gravity_update, parse_config, spawn_bodies, BodyAttributes};
 mod bodies;
 
 fn main() {
-    let bodies = vec![BodyAttributes {
-        radius: 40.0,
-        restitution: 1.0,
-        mass: 300.0,
-        velocity: Vec2::new(0.0, 25.0),
-        position: Vec2::new(500.0, 0.0),
-    }];
-    App::new()
-        .add_plugins(DefaultPlugins)
-        .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(20.0))
-        .add_plugins(RapierDebugRenderPlugin::default())
-        .add_plugins(ShapePlugin)
-        .insert_resource(RapierConfiguration {
-            timestep_mode: TimestepMode::Fixed {
-                dt: 1.0 / 10.0,
-                substeps: 1,
-            },
-            gravity: Vec2::new(0.0, 0.0),
-            physics_pipeline_active: true,
-            query_pipeline_active: true,
-            scaled_shape_subdivision: 10, // Set subdivision level for scaled shapes
-            force_update_from_transform_changes: true, // Force updates based on transform changes
-        })
-        .insert_resource(bodies::BodiesResource { bodies })
-        .add_systems(Startup, setup_graphics)
-        .add_systems(Startup, spawn_bodies)
-        .add_systems(Startup, setup_physics)
-        .add_systems(Startup, bodies::setup_vectors.after(setup_physics))
-        .add_systems(Update, bodies::gravity_update)
-        .add_systems(Update, camera_update)
-        .add_systems(Update, bodies::vector_update.after(gravity_update))
-        .run();
+    let bodies = bodies::parse_config();
+    for body in bodies {
+        println!("{:?}", body);
+    }
+    //App::new()
+    //    .add_plugins(DefaultPlugins)
+    //    .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(20.0))
+    //    .add_plugins(RapierDebugRenderPlugin::default())
+    //    .add_plugins(ShapePlugin)
+    //    .insert_resource(RapierConfiguration {
+    //        timestep_mode: TimestepMode::Fixed {
+    //            dt: 1.0 / 10.0,
+    //            substeps: 1,
+    //        },
+    //        gravity: Vec2::new(0.0, 0.0),
+    //        physics_pipeline_active: true,
+    //        query_pipeline_active: true,
+    //        scaled_shape_subdivision: 10, // Set subdivision level for scaled shapes
+    //        force_update_from_transform_changes: true, // Force updates based on transform changes
+    //    })
+    //    .insert_resource(bodies::BodiesResource { bodies })
+    //    .add_systems(Startup, setup_graphics)
+    //    .add_systems(Startup, spawn_bodies)
+    //    .add_systems(Startup, setup_physics)
+    //    .add_systems(Startup, bodies::setup_vectors.after(setup_physics))
+    //    .add_systems(Update, bodies::gravity_update)
+    //    .add_systems(Update, camera_update)
+    //    .add_systems(Update, bodies::vector_update.after(gravity_update))
+    //    .run();
 }
 fn setup_graphics(mut commands: Commands) {
     commands.spawn(Camera2dBundle {
