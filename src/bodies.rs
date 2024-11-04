@@ -6,7 +6,7 @@ use serde::Deserialize;
 use std::{fs::File, io::Read};
 
 #[derive(Debug, Deserialize)]
-pub struct Config {
+pub struct InitialCondition {
     pub BodyAttributes: Vec<BodyAttributes>,
 }
 
@@ -29,12 +29,12 @@ pub struct BodiesResource {
     pub bodies: Vec<BodyAttributes>,
 }
 
-pub fn parse_config() -> Config {
+pub fn parse_config() -> InitialCondition {
     let mut file = File::open("config.toml").unwrap();
     let mut configuration = String::new();
     file.read_to_string(&mut configuration).unwrap();
 
-    let attributes: Config = toml::from_str(&configuration).unwrap();
+    let attributes: InitialCondition = toml::from_str(&configuration).unwrap();
 
     attributes
 }
