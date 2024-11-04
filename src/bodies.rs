@@ -15,11 +15,11 @@ pub struct BodyAttributes {
     pub radius: f32,
     pub restitution: f32,
     pub mass: f32,
-    pub velocity: TomlVector,
-    pub position: TomlVector,
+    pub velocity: VectorStruct,
+    pub position: VectorStruct,
 }
 #[derive(Debug, Deserialize)]
-pub struct TomlVector {
+pub struct VectorStruct {
     x: f32,
     y: f32,
 }
@@ -39,8 +39,8 @@ pub fn parse_config() -> InitialCondition {
     attributes
 }
 
-pub fn spawn_bodies(mut commands: Commands, bodies: Res<BodiesResource>) {
-    let bodies_iter = &bodies.bodies;
+pub fn spawn_bodies(mut commands: Commands, bodies: Res<InitialCondition>) {
+    let bodies_iter = &bodies.0;
     for body in bodies_iter {
         commands
             .spawn(RigidBody::Dynamic)
