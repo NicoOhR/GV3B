@@ -6,11 +6,6 @@ use serde::Deserialize;
 use std::{fs::File, io::Read};
 
 #[derive(Debug, Deserialize)]
-pub struct InitialCondition {
-    pub BodyAttributes: Vec<BodyAttributes>,
-}
-
-#[derive(Debug, Deserialize)]
 pub struct BodyAttributes {
     pub radius: f32,
     pub restitution: f32,
@@ -18,29 +13,29 @@ pub struct BodyAttributes {
     pub velocity: VectorStruct,
     pub position: VectorStruct,
 }
+
 #[derive(Debug, Deserialize)]
 pub struct VectorStruct {
     x: f32,
     y: f32,
 }
 
-#[derive(Default, Resource)]
-pub struct BodiesResource {
-    pub bodies: Vec<BodyAttributes>,
+#[derive(Default, Resource, Deserialize)]
+pub struct InitialCondition {
+    //I would love this to be a tuple struct
+    //but the toml parsing likes it this way
+    pub body_attributes: Vec<BodyAttributes>,
 }
 
 pub fn parse_config() -> InitialCondition {
     let mut file = File::open("config.toml").unwrap();
     let mut configuration = String::new();
     file.read_to_string(&mut configuration).unwrap();
-
-    let attributes: InitialCondition = toml::from_str(&configuration).unwrap();
-
-    attributes
+    toml::from_str(&configuration).unwrap()
 }
 
 pub fn spawn_bodies(mut commands: Commands, bodies: Res<InitialCondition>) {
-    let bodies_iter = &bodies.0;
+    let bodies_iter = &bodies.body_attributes;
     for body in bodies_iter {
         commands
             .spawn(RigidBody::Dynamic)

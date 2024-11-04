@@ -4,7 +4,6 @@ use bevy_rapier2d::prelude::*;
 mod bodies;
 
 fn main() {
-    let bodies = bodies::parse_config().0;
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(20.0))
@@ -21,7 +20,7 @@ fn main() {
             scaled_shape_subdivision: 10, // Set subdivision level for scaled shapes
             force_update_from_transform_changes: true, // Force updates based on transform changes
         })
-        .insert_resource(bodies::InitialCondition(bodies))
+        .insert_resource(bodies::parse_config())
         .add_systems(Startup, setup_graphics)
         .add_systems(Startup, bodies::spawn_bodies)
         .add_systems(Startup, bodies::setup_vectors.after(bodies::spawn_bodies))
