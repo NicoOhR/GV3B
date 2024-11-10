@@ -3,11 +3,13 @@ use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rapier2d::na::Vector2;
 use serde::Deserialize;
-use std::sync::{Arc, Mutex};
 use std::{fs::File, io::Read};
+
+use crate::server::SimulationService;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct BodyAttributes {
+    pub id: BodyId,
     pub radius: f32,
     pub restitution: f32,
     pub mass: f32,
@@ -21,7 +23,10 @@ pub struct VectorStruct {
     pub y: f32,
 }
 
-#[derive(Default, Resource, Deserialize)]
+#[derive(Default, Clone, Deserialize, Debug, Component, Copy)]
+pub struct BodyId(u32);
+
+#[derive(Default, Debug, Resource, Deserialize)]
 pub struct SimulationState {
     //I would love this to be a tuple struct
     //but the toml parsing likes it this way
@@ -44,6 +49,7 @@ pub fn spawn_bodies(mut commands: Commands, bodies: Res<SimulationState>) {
             .insert(Restitution::coefficient(body.restitution))
             .insert(ColliderMassProperties::Mass(body.mass))
             .insert(ExternalForce::default())
+            .insert(body.id)
             .insert(Velocity {
                 linvel: Vec2::new(body.velocity.x, body.velocity.y),
                 ..default()
@@ -69,12 +75,19 @@ pub fn gravitational_force(
 }
 
 pub fn gravity_update(
-    mut bodies: Query<(&ColliderMassProperties, &Transform, &mut ExternalForce)>,
+    mut bodies: Query<(
+        &ColliderMassProperties,
+        &Transform,
+        &mut ExternalForce,
+        &BodyId,
+        &Velocity,
+    )>,
+    mut service: ResMut<SimulationService>,
 ) {
     let mut combinations = bodies.iter_combinations_mut::<2>();
     while let Some([body1, body2]) = combinations.fetch_next() {
-        let (mass_properties_1, translation1, mut ex_force_1) = body1;
-        let (mass_properties_2, translation2, mut ex_force_2) = body2;
+        let (mass_properties_1, translation1, mut ex_force_1, body_id_1, velocity_1) = body1;
+        let (mass_properties_2, translation2, mut ex_force_2, body_id_2, velocity_2) = body2;
 
         //now this is just awful
         let mass1 = match mass_properties_1 {
@@ -94,6 +107,32 @@ pub fn gravity_update(
         let f_2_1 = -f_1_2;
         ex_force_1.force = f_1_2.into();
         ex_force_2.force = f_2_1.into();
+
+        let mut state = service.state.lock().unwrap();
+        //shitty imperative code is imperative
+        for body in &mut state.body_attributes {
+            if body.id.0 == body_id_1.0 {
+                body.position = VectorStruct {
+                    x: translation1.translation.truncate().x,
+                    y: translation1.translation.truncate().y,
+                };
+                body.velocity = VectorStruct {
+                    x: velocity_1.linvel.x,
+                    y: velocity_1.linvel.y,
+                };
+            }
+            if body.id.0 == body_id_2.0 {
+                body.position = VectorStruct {
+                    x: translation2.translation.truncate().x,
+                    y: translation2.translation.truncate().y,
+                };
+                body.velocity = VectorStruct {
+                    x: velocity_2.linvel.x,
+                    y: velocity_2.linvel.y,
+                };
+            }
+        }
+        //println!("{:?}", state);
     }
 }
 

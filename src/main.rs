@@ -24,7 +24,7 @@ fn main() {
         })
         .insert_resource(bodies::parse_config())
         .add_systems(Startup, setup_graphics)
-        .add_systems(Startup, server::start_server)
+        .add_systems(Startup, server::setup_server)
         .add_systems(Startup, bodies::spawn_bodies)
         .add_systems(Startup, bodies::setup_vectors.after(bodies::spawn_bodies))
         .add_systems(Update, bodies::gravity_update)

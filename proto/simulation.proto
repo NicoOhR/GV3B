@@ -3,7 +3,7 @@ syntax = "proto3";
 package simulation;
 
 service Sim {
-  rpc Replies(SimReq) returns  (SimResponse) {}
+  rpc Replies(SimReq) returns (SimResponse) {}
 }
 
 message SimReq{

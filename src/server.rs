@@ -1,7 +1,7 @@
 tonic::include_proto!("simulation");
 
 use crate::bodies::SimulationState;
-use bevy::prelude::{Res, ResMut};
+use bevy::prelude::{Commands, Res, ResMut, Resource};
 use bevy_tokio_tasks::*;
 use sim_server::{Sim, SimServer};
 use std::{
@@ -10,17 +10,23 @@ use std::{
 };
 use tonic::{transport::Server, Request, Response, Status};
 
-#[derive(Default, Clone)]
+#[derive(Default, Clone, Resource)]
 pub struct SimulationService {
-    state: Arc<Mutex<SimulationState>>,
+    pub state: Arc<Mutex<SimulationState>>,
 }
 
-pub fn start_server(sim_state: Res<'_, SimulationState>, runtime: ResMut<'_, TokioTasksRuntime>) {
+pub fn setup_server(
+    sim_state: Res<'_, SimulationState>,
+    runtime: ResMut<'_, TokioTasksRuntime>,
+    mut commands: Commands,
+) {
     let service = SimulationService {
         state: Arc::new(Mutex::new(SimulationState {
             body_attributes: sim_state.body_attributes.clone(),
         })),
     };
+
+    commands.insert_resource(service.clone());
 
     let addr: SocketAddr = "0.0.0.0:50051".parse().unwrap();
     runtime.spawn_background_task(move |_ctx| async move {
@@ -37,6 +43,7 @@ pub fn start_server(sim_state: Res<'_, SimulationState>, runtime: ResMut<'_, Tok
 #[tonic::async_trait]
 impl Sim for SimulationService {
     async fn replies(&self, _request: Request<SimReq>) -> Result<Response<SimResponse>, Status> {
+        println!("{:?}", self.state);
         let state = self.state.lock().unwrap();
         let mut body_velocity_position: Vec<BodyAttributes> = vec![];
         let mut body_state: BodyAttributes;
