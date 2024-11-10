@@ -3,6 +3,7 @@ tonic::include_proto!("simulation");
 use crate::bodies::SimulationState;
 use bevy::prelude::{Commands, Res, ResMut, Resource};
 use bevy_tokio_tasks::*;
+use colored::*;
 use sim_server::{Sim, SimServer};
 use std::{
     net::SocketAddr,
@@ -43,7 +44,7 @@ pub fn setup_server(
 #[tonic::async_trait]
 impl Sim for SimulationService {
     async fn replies(&self, _request: Request<SimReq>) -> Result<Response<SimResponse>, Status> {
-        println!("{:?}", self.state);
+        println!("{} Responded with: \n {:?}", "[Server]".green(), self.state);
         let state = self.state.lock().unwrap();
         let mut body_velocity_position: Vec<BodyAttributes> = vec![];
         let mut body_state: BodyAttributes;

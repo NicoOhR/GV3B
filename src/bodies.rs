@@ -109,6 +109,7 @@ pub fn gravity_update(
         ex_force_2.force = f_2_1.into();
 
         let mut state = service.state.lock().unwrap();
+
         //shitty imperative code is imperative
         for body in &mut state.body_attributes {
             if body.id.0 == body_id_1.0 {
@@ -132,13 +133,11 @@ pub fn gravity_update(
                 };
             }
         }
-        //println!("{:?}", state);
     }
 }
 
 pub fn setup_vectors(mut commands: Commands, query_bodies: Query<&Transform>) {
     for _ in query_bodies.iter() {
-        //println!("making vector");
         let line = shapes::Line(Vec2::ZERO, Vec2::new(0.0, 0.0));
         commands.spawn((
             ShapeBundle {
@@ -155,7 +154,6 @@ pub fn vector_update(query_body: Query<(&Transform, &Velocity)>, mut query_path:
         let center_of_mass = transform.translation.truncate();
         let vel = velocity.linvel;
         let new_line = shapes::Line(center_of_mass, center_of_mass + vel);
-        //println!("Making Vector {:?}", vel);
         *path = ShapePath::build_as(&new_line);
     }
 }
