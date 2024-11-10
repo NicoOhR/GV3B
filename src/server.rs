@@ -22,18 +22,15 @@ pub fn start_server(sim_state: Res<'_, SimulationState>, runtime: ResMut<'_, Tok
         })),
     };
 
-    println!("Started Server");
-    let addr: SocketAddr = "[::1]:50051".parse().unwrap();
+    let addr: SocketAddr = "0.0.0.0:50051".parse().unwrap();
     runtime.spawn_background_task(move |_ctx| async move {
         let service = service.clone();
         let addr = addr.clone();
-        async move {
-            Server::builder()
-                .add_service(SimServer::new(service))
-                .serve(addr)
-                .await
-                .expect("Failed to start gRPC server");
-        }
+        Server::builder()
+            .add_service(SimServer::new(service))
+            .serve(addr)
+            .await
+            .expect("[Server] Failed to start");
     });
 }
 
