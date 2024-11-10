@@ -415,6 +415,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy-tokio-tasks"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a8893452e2329cdbfdee5244bb6bd1be1910b91530f91ca44565edca90b16cdb"
+dependencies = [
+ "bevy_app",
+ "bevy_ecs",
+ "tokio",
+]
+
+[[package]]
 name = "bevy_a11y"
 version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4255,9 +4266,11 @@ name = "three_body"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy-tokio-tasks",
  "bevy_prototype_lyon",
  "bevy_rapier2d",
  "physical_constants",
+ "prost",
  "rapier2d 0.22.0",
  "serde",
  "tokio",

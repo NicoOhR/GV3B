@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
 mod bodies;
+mod server;
 
 fn main() {
     App::new()
@@ -9,6 +10,7 @@ fn main() {
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(20.0))
         .add_plugins(RapierDebugRenderPlugin::default())
         .add_plugins(ShapePlugin)
+        .add_plugins(bevy_tokio_tasks::TokioTasksPlugin::default())
         .insert_resource(RapierConfiguration {
             timestep_mode: TimestepMode::Fixed {
                 dt: 1.0 / 10.0,
@@ -22,6 +24,7 @@ fn main() {
         })
         .insert_resource(bodies::parse_config())
         .add_systems(Startup, setup_graphics)
+        .add_systems(Startup, server::start_server)
         .add_systems(Startup, bodies::spawn_bodies)
         .add_systems(Startup, bodies::setup_vectors.after(bodies::spawn_bodies))
         .add_systems(Update, bodies::gravity_update)

@@ -3,9 +3,10 @@ use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rapier2d::na::Vector2;
 use serde::Deserialize;
+use std::sync::{Arc, Mutex};
 use std::{fs::File, io::Read};
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct BodyAttributes {
     pub radius: f32,
     pub restitution: f32,
@@ -14,27 +15,27 @@ pub struct BodyAttributes {
     pub position: VectorStruct,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct VectorStruct {
-    x: f32,
-    y: f32,
+    pub x: f32,
+    pub y: f32,
 }
 
 #[derive(Default, Resource, Deserialize)]
-pub struct InitialCondition {
+pub struct SimulationState {
     //I would love this to be a tuple struct
     //but the toml parsing likes it this way
     pub body_attributes: Vec<BodyAttributes>,
 }
 
-pub fn parse_config() -> InitialCondition {
+pub fn parse_config() -> SimulationState {
     let mut file = File::open("config.toml").unwrap();
     let mut configuration = String::new();
     file.read_to_string(&mut configuration).unwrap();
     toml::from_str(&configuration).unwrap()
 }
 
-pub fn spawn_bodies(mut commands: Commands, bodies: Res<InitialCondition>) {
+pub fn spawn_bodies(mut commands: Commands, bodies: Res<SimulationState>) {
     let bodies_iter = &bodies.body_attributes;
     for body in bodies_iter {
         commands
@@ -54,6 +55,7 @@ pub fn spawn_bodies(mut commands: Commands, bodies: Res<InitialCondition>) {
             )));
     }
 }
+
 pub fn gravitational_force(
     mass1: f32,
     mass2: f32,
