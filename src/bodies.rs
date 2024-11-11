@@ -82,7 +82,7 @@ pub fn gravity_update(
         &BodyId,
         &Velocity,
     )>,
-    mut service: ResMut<SimulationService>,
+    service: ResMut<SimulationService>,
 ) {
     let mut combinations = bodies.iter_combinations_mut::<2>();
     while let Some([body1, body2]) = combinations.fetch_next() {
