@@ -1,3 +1,6 @@
 [submodule "simulation"]
 	path = simulation
 	url = git@github.com:NicoOhR/GV3B_simulation.git
+[submodule "solver_agent"]
+	path = solver_agent
+	url = git@github.com:NicoOhR/GV3B_solver_agent.git
